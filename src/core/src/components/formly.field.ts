@@ -252,13 +252,6 @@ export class FormlyField implements DoCheck, OnInit, OnDestroy {
 
 	private toggleHide(value: boolean) {
 		this.field.hide = value;
-		if (this.field.formControl) {
-			if (value === true && this.form.get(this.field.key)) {
-				setTimeout(() => this.removeFieldControl());
-			} else if (value === false && !this.form.get(this.field.key)) {
-				setTimeout(() => this.addFieldControl());
-			}
-		}
 
 		this.renderer.setElementStyle(this.elementRef.nativeElement, 'display', value ? 'none' : '');
 		if (this.field.fieldGroup) {
@@ -267,26 +260,6 @@ export class FormlyField implements DoCheck, OnInit, OnDestroy {
 			}
 		} else {
 			this.psEmit(this.field.key, 'hidden', value);
-		}
-	}
-
-	private addFieldControl() {
-		const parent = this.fieldParentFormControl;
-
-		if (parent instanceof FormArray) {
-			parent.push(this.field.formControl);
-		} else if (parent instanceof FormGroup) {
-			parent.addControl(this.fieldKey, this.field.formControl);
-		}
-	}
-
-	private removeFieldControl() {
-		const parent = this.fieldParentFormControl;
-
-		if (parent instanceof FormArray) {
-			parent.removeAt(this.fieldKey as any);
-		} else if (parent instanceof FormGroup) {
-			parent.removeControl(this.fieldKey);
 		}
 	}
 }
