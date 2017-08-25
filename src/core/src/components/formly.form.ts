@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
 import { FormlyFormBuilder } from '../services/formly.form.builder';
 import { assignModelValue, getFieldModel, getKey, getValueForKey, isNullOrUndefined, isObject, reverseDeepMerge } from '../utils';
@@ -25,6 +25,9 @@ export class FormlyForm implements OnChanges {
 	/** @internal */
 	@Input() buildForm: boolean = true;
 
+	@Output() modelWillChange: EventEmitter<void> = new EventEmitter();
+	@Output() modelDidChange: EventEmitter<void> = new EventEmitter();
+
 	private initialModel: any;
 
 	constructor(private formlyBuilder: FormlyFormBuilder) {
@@ -32,6 +35,8 @@ export class FormlyForm implements OnChanges {
 
 	ngOnChanges(changes: SimpleChanges) {
 		if (changes['fields']) {
+			this.modelWillChange.emit();
+
 			this.model = this.model || {};
 			this.form = this.form || (new FormGroup({}));
 			this.setOptions();
@@ -39,8 +44,14 @@ export class FormlyForm implements OnChanges {
 				this.formlyBuilder.buildForm(this.form, this.fields, this.model, this.options);
 			}
 			this.updateInitialValue();
+
+			this.modelDidChange.emit();
 		} else if (changes['model'] && this.fields && this.fields.length > 0) {
+			this.modelWillChange.emit();
+
 			this.form.patchValue(this.model);
+
+			this.modelDidChange.emit();
 		}
 	}
 
