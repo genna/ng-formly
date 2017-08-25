@@ -1,6 +1,6 @@
 {
-  "name": "ng-formly",
-  "version": "1.0.0-rc.10",
+  "name": "wfw-ngx-formly",
+  "version": "1.0.1",
   "author": "Zama Khan Mohammed <mohammedzamakhan@gmail.com>",
   "contributors": [
     "Zama Khan Mohammed <mohammedzamakhan@gmail.com>",
@@ -41,14 +41,14 @@
   "description": "ng-formly is an Angular 2 module which has a Components to help customize and render JavaScript/JSON configured forms. The formly-form Component and the FormlyConfig service are very powerful and bring unmatched maintainability to your application's forms.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/formly-js/ng-formly.git"
+    "url": "git+https://github.com/genna/wfw-ngx-formly.git"
   },
   "bugs": {
-    "url": "https://github.com/formly-js/ng-formly/issues"
+    "url": "https://github.com/genna/wfw-ngx-formly/issues"
   },
-  "homepage": "https://github.com/formly-js/ng-formly#readme",
+  "homepage": "https://github.com/genna/wfw-ngx-formly#readme",
   "peerDependencies": {
-    "@angular/forms": "^2.2.0 || >=4.0.0-rc <5.0.0"
+    "@angular/forms": ">=4.0.0 <5.0.0"
   },
   "dependencies": {
     "tslib": "^1.7.1"
