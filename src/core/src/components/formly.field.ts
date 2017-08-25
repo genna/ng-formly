@@ -1,280 +1,292 @@
 import {
-  Component, OnInit, EventEmitter, ElementRef, Input, Output, DoCheck, OnDestroy,
-  ViewContainerRef, ViewChild, ComponentRef, Renderer, ComponentFactoryResolver,
+	Component,
+	ComponentFactoryResolver,
+	ComponentRef,
+	DoCheck,
+	ElementRef,
+	EventEmitter,
+	Input,
+	OnDestroy,
+	OnInit,
+	Output,
+	Renderer,
+	ViewChild,
+	ViewContainerRef
 } from '@angular/core';
-import { FormGroup, FormArray } from '@angular/forms';
-import { FormlyPubSub, FormlyEventEmitter, FormlyValueChangeEvent } from '../services/formly.event.emitter';
-import { FormlyConfig, ManipulatorWrapper, TypeOption } from '../services/formly.config';
-import { Field } from '../templates/field';
-import { evalExpression } from '../utils';
-import { Subscription } from 'rxjs/Subscription';
-import { FormlyFieldConfig } from './formly.field.config';
+import { FormArray, FormGroup } from '@angular/forms';
 import { debounceTime } from 'rxjs/operator/debounceTime';
 import { map } from 'rxjs/operator/map';
+import { Subscription } from 'rxjs/Subscription';
+import { FormlyConfig, TypeOption } from '../services/formly.config';
+import { FormlyEventEmitter, FormlyPubSub, FormlyValueChangeEvent } from '../services/formly.event.emitter';
+import { Field } from '../templates/field';
+import { evalExpression } from '../utils';
+import { FormlyFieldConfig } from './formly.field.config';
 
 @Component({
-  selector: 'formly-field',
-  template: `
-    <ng-container #fieldComponent></ng-container>
-    <div *ngIf="field.template && !field.fieldGroup" [innerHtml]="field.template"></div>
-  `,
+	selector: 'formly-field',
+	template: `
+		<ng-container #fieldComponent></ng-container>
+		<div *ngIf="field.template && !field.fieldGroup" [innerHtml]="field.template"></div>
+	`
 })
 export class FormlyField implements DoCheck, OnInit, OnDestroy {
-  @Input() model: any;
-  @Input() form: FormGroup;
-  @Input() field: FormlyFieldConfig;
-  @Input() options: any = {};
-  @Output() modelChange: EventEmitter<any> = new EventEmitter();
-  @ViewChild('fieldComponent', {read: ViewContainerRef}) fieldComponent: ViewContainerRef;
+	@Input() model: any;
+	@Input() form: FormGroup;
+	@Input() field: FormlyFieldConfig;
+	@Input() options: any = {};
+	@Output() modelChange: EventEmitter<any> = new EventEmitter();
+	@ViewChild('fieldComponent', { read: ViewContainerRef }) fieldComponent: ViewContainerRef;
 
-  private componentRefs: ComponentRef<Field>[] = [];
-  private _subscriptions: Subscription[] = [];
+	private componentRefs: ComponentRef<Field>[] = [];
+	private _subscriptions: Subscription[] = [];
 
-  constructor(
-    private elementRef: ElementRef,
-    private formlyPubSub: FormlyPubSub,
-    private renderer: Renderer,
-    private formlyConfig: FormlyConfig,
-    private componentFactoryResolver: ComponentFactoryResolver,
-  ) {}
+	constructor(
+		private elementRef: ElementRef,
+		private formlyPubSub: FormlyPubSub,
+		private renderer: Renderer,
+		private formlyConfig: FormlyConfig,
+		private componentFactoryResolver: ComponentFactoryResolver
+	) {
+	}
 
-  ngDoCheck() {
-    this.checkExpressionChange();
-    this.checkVisibilityChange();
-  }
+	private get fieldKey() {
+		return this.field.key.split('.').pop();
+	}
 
-  ngOnInit() {
-    this.createFieldComponents();
-    if (this.field.hide === true) {
-      this.toggleHide(true);
-    }
-  }
+	private get fieldParentFormControl(): FormArray | FormGroup {
+		const paths = this.field.key.split('.');
+		paths.pop(); // remove last path
 
-  ngOnDestroy() {
-    this.componentRefs.map(componentRef => componentRef.destroy());
-    this._subscriptions.map(subscriber => subscriber.unsubscribe());
-    this._subscriptions = this.componentRefs = [];
+		return (paths.length > 0 ? this.form.get(paths) : this.form) as any;
+	}
 
-    if (this.field && this.field.key) {
-      this.formlyPubSub.removeEmitter(this.field.key);
-    }
-  }
+	ngDoCheck() {
+		this.checkExpressionChange();
+		this.checkVisibilityChange();
+	}
 
-  changeModel(event: FormlyValueChangeEvent) {
-    this.modelChange.emit(event);
-  }
+	ngOnInit() {
+		this.createFieldComponents();
+		if (this.field.hide === true) {
+			this.toggleHide(true);
+		}
+	}
 
-  private createFieldComponents() {
-    if (this.field && !this.field.template && !this.field.fieldGroup && !this.field.fieldArray) {
-      let debounce = 0;
-      if (this.field.modelOptions && this.field.modelOptions.debounce && this.field.modelOptions.debounce.default) {
-        debounce = this.field.modelOptions.debounce.default;
-      }
+	ngOnDestroy() {
+		this.componentRefs.map(componentRef => componentRef.destroy());
+		this._subscriptions.map(subscriber => subscriber.unsubscribe());
+		this._subscriptions = this.componentRefs = [];
 
-      const fieldComponentRef = this.createFieldComponent();
-      if (this.field.key) {
-        let valueChanges = fieldComponentRef.instance.formControl.valueChanges;
-        if (debounce > 0) {
-          valueChanges = debounceTime.call(valueChanges, debounce);
-        }
-        if (this.field.parsers && this.field.parsers.length > 0) {
-          this.field.parsers.map(parserFn => {
-            valueChanges = map.call(valueChanges, parserFn);
-          });
-        }
+		if (this.field && this.field.key) {
+			this.formlyPubSub.removeEmitter(this.field.key);
+		}
+	}
 
-        this._subscriptions.push(valueChanges.subscribe((event) => this
-          .changeModel(new FormlyValueChangeEvent(this.field.key, event)),
-        ));
-      }
+	changeModel(event: FormlyValueChangeEvent) {
+		this.modelChange.emit(event);
+	}
 
-      let update = new FormlyEventEmitter();
-      this._subscriptions.push(update.subscribe((option) => {
-        this.field.templateOptions[option.key] = option.value;
-      }));
+	private createFieldComponents() {
+		if (this.field && !this.field.template && !this.field.fieldGroup && !this.field.fieldArray) {
+			let debounce = 0;
+			if (this.field.modelOptions && this.field.modelOptions.debounce && this.field.modelOptions.debounce.default) {
+				debounce = this.field.modelOptions.debounce.default;
+			}
 
-      this.formlyPubSub.setEmitter(this.field.key, update);
-    } else if (this.field.fieldGroup || this.field.fieldArray) {
-      this.createFieldComponent();
-    }
-  }
+			const fieldComponentRef = this.createFieldComponent();
+			if (this.field.key) {
+				let valueChanges = fieldComponentRef.instance.formControl.valueChanges;
+				if (debounce > 0) {
+					valueChanges = debounceTime.call(valueChanges, debounce);
+				}
+				if (this.field.parsers && this.field.parsers.length > 0) {
+					this.field.parsers.map(parserFn => {
+						valueChanges = map.call(valueChanges, parserFn);
+					});
+				}
 
-  private createFieldComponent(): ComponentRef<Field> {
-    if (this.field.fieldGroup) {
-      this.field.type = this.field.type || 'formly-group';
-    }
-    const type = this.formlyConfig.getType(this.field.type),
-      wrappers = this.getFieldWrappers(type);
+				this._subscriptions.push(valueChanges.subscribe((event) => this
+					.changeModel(new FormlyValueChangeEvent(this.field.key, event))
+				));
+			}
 
-    let fieldComponent = this.fieldComponent;
-    wrappers.map(wrapperName => {
-      let wrapperRef = this.createComponent(fieldComponent, this.formlyConfig.getWrapper(wrapperName).component);
-      fieldComponent = wrapperRef.instance.fieldComponent;
-    });
+			let update = new FormlyEventEmitter();
+			this._subscriptions.push(update.subscribe((option) => {
+				this.field.templateOptions[option.key] = option.value;
+			}));
 
-    return this.createComponent(fieldComponent, type.component);
-  }
+			this.formlyPubSub.setEmitter(this.field.key, update);
+		} else if (this.field.fieldGroup || this.field.fieldArray) {
+			this.createFieldComponent();
+		}
+	}
 
-  private getFieldWrappers(type: TypeOption) {
-    let templateManipulators = {
-      preWrapper: [],
-      postWrapper: [],
-    };
+	private createFieldComponent(): ComponentRef<Field> {
+		if (this.field.fieldGroup) {
+			this.field.type = this.field.type || 'formly-group';
+		}
+		const type = this.formlyConfig.getType(this.field.type),
+			wrappers = this.getFieldWrappers(type);
 
-    if (this.field.templateOptions) {
-      this.mergeTemplateManipulators(templateManipulators, this.field.templateOptions.templateManipulators);
-    }
+		let fieldComponent = this.fieldComponent;
+		wrappers.map(wrapperName => {
+			let wrapperRef = this.createComponent(fieldComponent, this.formlyConfig.getWrapper(wrapperName).component);
+			fieldComponent = wrapperRef.instance.fieldComponent;
+		});
 
-    this.mergeTemplateManipulators(templateManipulators, this.formlyConfig.templateManipulators);
+		return this.createComponent(fieldComponent, type.component);
+	}
 
-    let preWrappers = templateManipulators.preWrapper.map(m => m(this.field)).filter(type => type),
-      postWrappers = templateManipulators.postWrapper.map(m => m(this.field)).filter(type => type);
+	private getFieldWrappers(type: TypeOption) {
+		let templateManipulators = {
+			preWrapper: [],
+			postWrapper: []
+		};
 
-    if (!this.field.wrappers) this.field.wrappers = [];
-    if (!type.wrappers) type.wrappers = [];
-    if (this.field.wrapper) {
-       console.warn(`${this.field.key}: wrapper is deprecated. Use 'wrappers' instead.`);
-       this.field.wrappers = Array.isArray(this.field.wrapper) ? this.field.wrapper : [this.field.wrapper];
-    }
+		if (this.field.templateOptions) {
+			this.mergeTemplateManipulators(templateManipulators, this.field.templateOptions.templateManipulators);
+		}
 
-    return [...preWrappers, ...this.field.wrappers, ...postWrappers];
-  }
+		this.mergeTemplateManipulators(templateManipulators, this.formlyConfig.templateManipulators);
 
-  private mergeTemplateManipulators(source, target) {
-    target = target || {};
-    if (target.preWrapper) {
-      source.preWrapper = source.preWrapper.concat(target.preWrapper);
-    }
-    if (target.postWrapper) {
-      source.postWrapper = source.postWrapper.concat(target.postWrapper);
-    }
+		let preWrappers = templateManipulators.preWrapper.map(m => m(this.field)).filter(type => type),
+			postWrappers = templateManipulators.postWrapper.map(m => m(this.field)).filter(type => type);
 
-    return source;
-  }
+		if (!this.field.wrappers) this.field.wrappers = [];
+		if (!type.wrappers) type.wrappers = [];
+		if (this.field.wrapper) {
+			console.warn(`${this.field.key}: wrapper is deprecated. Use 'wrappers' instead.`);
+			this.field.wrappers = Array.isArray(this.field.wrapper) ? this.field.wrapper : [this.field.wrapper];
+		}
 
-  private createComponent(fieldComponent: ViewContainerRef, component: any): ComponentRef<any> {
-    let componentFactory = this.componentFactoryResolver.resolveComponentFactory(component);
-    let ref = <ComponentRef<Field>>fieldComponent.createComponent(componentFactory);
+		return [...preWrappers, ...this.field.wrappers, ...postWrappers];
+	}
 
-    Object.assign(ref.instance, {
-        model: this.model,
-        form: this.form,
-        field: this.field,
-        options: this.options,
-    });
+	private mergeTemplateManipulators(source, target) {
+		target = target || {};
+		if (target.preWrapper) {
+			source.preWrapper = source.preWrapper.concat(target.preWrapper);
+		}
+		if (target.postWrapper) {
+			source.postWrapper = source.postWrapper.concat(target.postWrapper);
+		}
 
-    this.componentRefs.push(ref);
+		return source;
+	}
 
-    return ref;
-  }
+	private createComponent(fieldComponent: ViewContainerRef, component: any): ComponentRef<any> {
+		let componentFactory = this.componentFactoryResolver.resolveComponentFactory(component);
+		let ref = <ComponentRef<Field>>fieldComponent.createComponent(componentFactory);
 
-  private psEmit(fieldKey: string, eventKey: string, value: any) {
-    if (this.formlyPubSub && this.formlyPubSub.getEmitter(fieldKey) && this.formlyPubSub.getEmitter(fieldKey).emit) {
-      this.formlyPubSub.getEmitter(fieldKey).emit(new FormlyValueChangeEvent(eventKey, value));
-    }
-  }
+		Object.assign(ref.instance, {
+			model: this.model,
+			form: this.form,
+			field: this.field,
+			options: this.options
+		});
 
-  private checkVisibilityChange() {
-    if (this.field && this.field.hideExpression) {
-      const hideExpressionResult: boolean = !!evalExpression(
-        this.field.hideExpression,
-        this,
-        [this.model, this.options.formState],
-      );
+		this.componentRefs.push(ref);
 
-      if (hideExpressionResult !== this.field.hide) {
-        this.toggleHide(hideExpressionResult);
-      }
-    }
-  }
+		return ref;
+	}
 
-  private checkExpressionChange() {
-    if (this.field && this.field.expressionProperties) {
-      const expressionProperties = this.field.expressionProperties;
+	private psEmit(fieldKey: string, eventKey: string, value: any) {
+		if (this.formlyPubSub && this.formlyPubSub.getEmitter(fieldKey) && this.formlyPubSub.getEmitter(fieldKey).emit) {
+			this.formlyPubSub.getEmitter(fieldKey).emit(new FormlyValueChangeEvent(eventKey, value));
+		}
+	}
 
-      for (let key in expressionProperties) {
-        const expressionValue = evalExpression(
-          expressionProperties[key].expression,
-          this,
-          [this.model, this.options.formState],
-        );
+	private checkVisibilityChange() {
+		if (this.field && this.field.hideExpression) {
+			const hideExpressionResult: boolean = !!evalExpression(
+				this.field.hideExpression,
+				this,
+				[this.model, this.options.formState]
+			);
 
-        if (expressionProperties[key].expressionValue !== expressionValue) {
-          expressionProperties[key].expressionValue = expressionValue;
-          evalExpression(
-            expressionProperties[key].expressionValueSetter,
-            this,
-            [expressionValue, this.model, this.field.templateOptions, this.field.validation],
-          );
-        }
-      }
+			if (hideExpressionResult !== this.field.hide) {
+				this.toggleHide(hideExpressionResult);
+			}
+		}
+	}
 
-      const formControl = this.field.formControl;
-      if (formControl) {
-        if (formControl.status === 'DISABLED' && !this.field.templateOptions.disabled) {
-            formControl.enable();
-        }
-        if (formControl.status !== 'DISABLED' && this.field.templateOptions.disabled) {
-            formControl.disable();
-        }
-        if (!formControl.dirty && formControl.invalid && this.field.validation && !this.field.validation.show) {
-          formControl.markAsUntouched();
-        }
-        if (!formControl.dirty && formControl.invalid && this.field.validation && this.field.validation.show) {
-          formControl.markAsTouched();
-        }
-      }
-    }
-  }
+	private checkExpressionChange() {
+		if (this.field && this.field.expressionProperties) {
+			const expressionProperties = this.field.expressionProperties;
 
-  private toggleHide(value: boolean) {
-    this.field.hide = value;
-    if (this.field.formControl) {
-      if (value === true && this.form.get(this.field.key)) {
-        setTimeout(() => this.removeFieldControl());
-      } else if (value === false && !this.form.get(this.field.key)) {
-        setTimeout(() => this.addFieldControl());
-      }
-    }
+			for (let key in expressionProperties) {
+				const expressionValue = evalExpression(
+					expressionProperties[key].expression,
+					this,
+					[this.model, this.options.formState]
+				);
 
-    this.renderer.setElementStyle(this.elementRef.nativeElement, 'display', value ? 'none' : '');
-    if (this.field.fieldGroup) {
-      for (let i = 0; i < this.field.fieldGroup.length; i++) {
-        this.psEmit(this.field.fieldGroup[i].key, 'hidden', value);
-      }
-    } else {
-      this.psEmit(this.field.key, 'hidden', value);
-    }
-  }
+				if (expressionProperties[key].expressionValue !== expressionValue) {
+					expressionProperties[key].expressionValue = expressionValue;
+					evalExpression(
+						expressionProperties[key].expressionValueSetter,
+						this,
+						[expressionValue, this.model, this.field.templateOptions, this.field.validation]
+					);
+				}
+			}
 
-  private get fieldKey() {
-    return this.field.key.split('.').pop();
-  }
+			const formControl = this.field.formControl;
+			if (formControl) {
+				if (formControl.status === 'DISABLED' && !this.field.templateOptions.disabled) {
+					formControl.enable();
+				}
+				if (formControl.status !== 'DISABLED' && this.field.templateOptions.disabled) {
+					formControl.disable();
+				}
+				if (!formControl.dirty && formControl.invalid && this.field.validation && !this.field.validation.show) {
+					formControl.markAsUntouched();
+				}
+				if (!formControl.dirty && formControl.invalid && this.field.validation && this.field.validation.show) {
+					formControl.markAsTouched();
+				}
+			}
+		}
+	}
 
-  private get fieldParentFormControl(): FormArray|FormGroup {
-      const paths = this.field.key.split('.');
-      paths.pop(); // remove last path
+	private toggleHide(value: boolean) {
+		this.field.hide = value;
+		if (this.field.formControl) {
+			if (value === true && this.form.get(this.field.key)) {
+				setTimeout(() => this.removeFieldControl());
+			} else if (value === false && !this.form.get(this.field.key)) {
+				setTimeout(() => this.addFieldControl());
+			}
+		}
 
-      return (paths.length > 0 ? this.form.get(paths) : this.form) as any;
-  }
+		this.renderer.setElementStyle(this.elementRef.nativeElement, 'display', value ? 'none' : '');
+		if (this.field.fieldGroup) {
+			for (let i = 0; i < this.field.fieldGroup.length; i++) {
+				this.psEmit(this.field.fieldGroup[i].key, 'hidden', value);
+			}
+		} else {
+			this.psEmit(this.field.key, 'hidden', value);
+		}
+	}
 
-  private addFieldControl() {
-    const parent = this.fieldParentFormControl;
+	private addFieldControl() {
+		const parent = this.fieldParentFormControl;
 
-    if (parent instanceof FormArray) {
-      parent.push(this.field.formControl);
-    } else if (parent instanceof FormGroup) {
-      parent.addControl(this.fieldKey, this.field.formControl);
-    }
-  }
+		if (parent instanceof FormArray) {
+			parent.push(this.field.formControl);
+		} else if (parent instanceof FormGroup) {
+			parent.addControl(this.fieldKey, this.field.formControl);
+		}
+	}
 
-  private removeFieldControl() {
-    const parent = this.fieldParentFormControl;
+	private removeFieldControl() {
+		const parent = this.fieldParentFormControl;
 
-    if (parent instanceof FormArray) {
-      parent.removeAt(this.fieldKey as any);
-    } else if (parent instanceof FormGroup) {
-      parent.removeControl(this.fieldKey);
-    }
-  }
+		if (parent instanceof FormArray) {
+			parent.removeAt(this.fieldKey as any);
+		} else if (parent instanceof FormGroup) {
+			parent.removeControl(this.fieldKey);
+		}
+	}
 }

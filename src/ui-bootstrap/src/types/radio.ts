@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { FieldType } from '../../../core';
 
 @Component({
-  selector: 'formly-field-radio',
-  template: `
+	selector: 'formly-field-radio',
+	template: `
     <div [formGroup]="form">
       <div *ngFor="let option of to.options" class="radio">
         <label class="custom-control custom-radio">
@@ -14,6 +14,7 @@ import { FieldType } from '../../../core';
         </label>
       </div>
     </div>
-  `,
+  `
 })
-export class FormlyFieldRadio extends FieldType {}
+export class FormlyFieldRadio extends FieldType {
+}

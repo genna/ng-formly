@@ -1,47 +1,47 @@
+import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit, DoCheck, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { FormlyLifeCycleFn, FormlyLifeCycleOptions } from './../components/formly.field.config';
 import { Field } from './field';
-import { OnInit, OnChanges, DoCheck, AfterContentInit, AfterContentChecked, AfterViewInit, OnDestroy, AfterViewChecked, SimpleChanges } from '@angular/core';
-import { FormlyLifeCycleOptions, FormlyLifeCycleFn } from './../components/formly.field.config';
 
 export abstract class FieldType extends Field implements OnInit, OnChanges, DoCheck, AfterContentInit, AfterContentChecked, AfterViewInit, AfterViewChecked, OnDestroy {
-  ngOnInit() {
-    this.lifeCycleHooks(this.lifecycle.onInit);
-  }
+	private get lifecycle(): FormlyLifeCycleOptions {
+		return this.field.lifecycle || {};
+	}
 
-  ngOnChanges(changes: SimpleChanges) {
-    this.lifeCycleHooks(this.lifecycle.onChanges);
-  }
+	ngOnInit() {
+		this.lifeCycleHooks(this.lifecycle.onInit);
+	}
 
-  ngDoCheck() {
-    this.lifeCycleHooks(this.lifecycle.doCheck);
-  }
+	ngOnChanges(changes: SimpleChanges) {
+		this.lifeCycleHooks(this.lifecycle.onChanges);
+	}
 
-  ngAfterContentInit() {
-    this.lifeCycleHooks(this.lifecycle.afterContentInit);
-  }
+	ngDoCheck() {
+		this.lifeCycleHooks(this.lifecycle.doCheck);
+	}
 
-  ngAfterContentChecked() {
-    this.lifeCycleHooks(this.lifecycle.afterContentChecked);
-  }
+	ngAfterContentInit() {
+		this.lifeCycleHooks(this.lifecycle.afterContentInit);
+	}
 
-  ngAfterViewInit() {
-    this.lifeCycleHooks(this.lifecycle.afterViewInit);
-  }
+	ngAfterContentChecked() {
+		this.lifeCycleHooks(this.lifecycle.afterContentChecked);
+	}
 
-  ngAfterViewChecked() {
-    this.lifeCycleHooks(this.lifecycle.afterViewChecked);
-  }
+	ngAfterViewInit() {
+		this.lifeCycleHooks(this.lifecycle.afterViewInit);
+	}
 
-  ngOnDestroy() {
-    this.lifeCycleHooks(this.lifecycle.onDestroy);
-  }
+	ngAfterViewChecked() {
+		this.lifeCycleHooks(this.lifecycle.afterViewChecked);
+	}
 
-  private get lifecycle(): FormlyLifeCycleOptions {
-    return this.field.lifecycle || {};
-  }
+	ngOnDestroy() {
+		this.lifeCycleHooks(this.lifecycle.onDestroy);
+	}
 
-  private lifeCycleHooks(callback: FormlyLifeCycleFn) {
-    if (callback) {
-      callback.bind(this)(this.form, this.field, this.model, this.options);
-    }
-  }
+	private lifeCycleHooks(callback: FormlyLifeCycleFn) {
+		if (callback) {
+			callback.bind(this)(this.form, this.field, this.model, this.options);
+		}
+	}
 }

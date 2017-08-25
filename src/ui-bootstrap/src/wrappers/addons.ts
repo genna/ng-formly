@@ -2,8 +2,8 @@ import { Component, ViewChild, ViewContainerRef } from '@angular/core';
 import { FieldWrapper } from '../../../core';
 
 @Component({
-  selector: 'formly-wrapper-addons',
-  template: `
+	selector: 'formly-wrapper-addons',
+	template: `
     <div class="input-group">
       <div class="input-group-addon"
         *ngIf="to.addonLeft"
@@ -21,20 +21,20 @@ import { FieldWrapper } from '../../../core';
         <span *ngIf="to.addonRight.text">{{ to.addonRight.text }}</span>
       </div>
     </div>
-  `,
+  `
 })
 export class FormlyWrapperAddons extends FieldWrapper {
-  @ViewChild('fieldComponent', {read: ViewContainerRef}) fieldComponent: ViewContainerRef;
+	@ViewChild('fieldComponent', { read: ViewContainerRef }) fieldComponent: ViewContainerRef;
 
-  addonRightClick($event: any) {
-    if (this.to.addonRight.onClick) {
-      this.to.addonRight.onClick(this.to, this, $event);
-    }
-  }
+	addonRightClick($event: any) {
+		if (this.to.addonRight.onClick) {
+			this.to.addonRight.onClick(this.to, this, $event);
+		}
+	}
 
-  addonLeftClick($event: any) {
-    if (this.to.addonLeft.onClick) {
-      this.to.addonLeft.onClick(this.to, this, $event);
-    }
-  }
+	addonLeftClick($event: any) {
+		if (this.to.addonLeft.onClick) {
+			this.to.addonLeft.onClick(this.to, this, $event);
+		}
+	}
 }

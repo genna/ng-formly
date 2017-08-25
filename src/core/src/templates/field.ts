@@ -1,30 +1,43 @@
 import { Input } from '@angular/core';
-import { FormGroup, AbstractControl } from '@angular/forms';
-import { FormlyTemplateOptions, FormlyFieldConfig } from '../components/formly.field.config';
+import { AbstractControl, FormGroup } from '@angular/forms';
+import { FormlyFieldConfig, FormlyTemplateOptions } from '../components/formly.field.config';
 
 export abstract class Field {
-  @Input() form: FormGroup;
-  @Input() field: FormlyFieldConfig;
-  @Input() model: any;
-  @Input() options: any;
+	@Input() form: FormGroup;
+	@Input() field: FormlyFieldConfig;
+	@Input() model: any;
+	@Input() options: any;
 
-  get key() { return this.field.key; }
-  get formControl(): AbstractControl { return this.field.formControl || this.form.get(this.key); }
+	get key() {
+		return this.field.key;
+	}
 
-  /**
-   * @deprecated Use `to` instead.
-   **/
-  get templateOptions(): FormlyTemplateOptions {
-    console.warn(`${this.constructor.name}: 'templateOptions' is deprecated. Use 'to' instead.`);
+	get formControl(): AbstractControl {
+		return this.field.formControl || this.form.get(this.key);
+	}
 
-    return this.to;
-  }
+	/**
+	 * @deprecated Use `to` instead.
+	 **/
+	get templateOptions(): FormlyTemplateOptions {
+		console.warn(`${this.constructor.name}: 'templateOptions' is deprecated. Use 'to' instead.`);
 
-  get to(): FormlyTemplateOptions { return this.field.templateOptions; }
+		return this.to;
+	}
 
-  get valid(): boolean { return this.options.showError(this); }
+	get to(): FormlyTemplateOptions {
+		return this.field.templateOptions;
+	}
 
-  get id(): string { return this.field.id; }
+	get valid(): boolean {
+		return this.options.showError(this);
+	}
 
-  get formState() { return this.options.formState || {}; }
+	get id(): string {
+		return this.field.id;
+	}
+
+	get formState() {
+		return this.options.formState || {};
+	}
 }

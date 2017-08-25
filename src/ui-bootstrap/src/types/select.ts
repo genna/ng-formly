@@ -2,21 +2,21 @@ import { Component } from '@angular/core';
 import { FieldType } from '../../../core';
 
 export class SelectOption {
-  label: string;
-  value?: string;
-  group?: SelectOption[];
-  disabled?: boolean;
+	label: string;
+	value?: string;
+	group?: SelectOption[];
+	disabled?: boolean;
 
-  constructor(label: string, value?: string, children?: SelectOption[]) {
-    this.label = label;
-    this.value = value;
-    this.group = children;
-  }
+	constructor(label: string, value?: string, children?: SelectOption[]) {
+		this.label = label;
+		this.value = value;
+		this.group = children;
+	}
 }
 
 @Component({
-  selector: 'formly-field-select',
-  template: `
+	selector: 'formly-field-select',
+	template: `
     <select [formControl]="formControl" class="form-control" [formlyAttributes]="field">
       <option value="" *ngIf="to.placeholder">{{ to.placeholder }}</option>
       <ng-container *ngFor="let item of selectOptions">
@@ -28,36 +28,44 @@ export class SelectOption {
        <option *ngIf="!item.group" [value]="item.value" [disabled]="item.disabled">{{ item.label }}</option>
       </ng-container>
     </select>
-  `,
+  `
 })
 export class FormlyFieldSelect extends FieldType {
-  get labelProp(): string { return this.to.labelProp || 'label'; }
-  get valueProp(): string { return this.to.valueProp || 'value'; }
-  get groupProp(): string { return this.to.groupProp || 'group'; }
+	get labelProp(): string {
+		return this.to.labelProp || 'label';
+	}
 
-  get selectOptions() {
-    let options: SelectOption[] = [];
-    this.to.options.map((option: SelectOption) => {
-      if (!option[this.groupProp]) {
-        options.push(option);
-      } else {
-        let filteredOption: SelectOption[] = options.filter((filteredOption) => {
-          return filteredOption.label === option[this.groupProp];
-        });
-        if (filteredOption[0]) {
-          filteredOption[0].group.push({
-            label: option[this.labelProp],
-            value: option[this.valueProp],
-          });
-        }
-        else {
-          options.push({
-            label: option[this.groupProp],
-            group: [{ value: option[this.valueProp], label: option[this.labelProp] }],
-          });
-        }
-      }
-    });
-    return options;
-  }
+	get valueProp(): string {
+		return this.to.valueProp || 'value';
+	}
+
+	get groupProp(): string {
+		return this.to.groupProp || 'group';
+	}
+
+	get selectOptions() {
+		let options: SelectOption[] = [];
+		this.to.options.map((option: SelectOption) => {
+			if (!option[this.groupProp]) {
+				options.push(option);
+			} else {
+				let filteredOption: SelectOption[] = options.filter((filteredOption) => {
+					return filteredOption.label === option[this.groupProp];
+				});
+				if (filteredOption[0]) {
+					filteredOption[0].group.push({
+						label: option[this.labelProp],
+						value: option[this.valueProp]
+					});
+				}
+				else {
+					options.push({
+						label: option[this.groupProp],
+						group: [{ value: option[this.valueProp], label: option[this.labelProp] }]
+					});
+				}
+			}
+		});
+		return options;
+	}
 }

@@ -1,5 +1,6 @@
 export { FormlyForm } from './components/formly.form';
 export { FormlyFieldConfig } from './components/formly.field.config';
+export { FormlyTemplateOptions } from './components/formly.field.config';
 export { FormlyField } from './components/formly.field';
 export { FormlyAttributes } from './components/formly.attributes';
 export { FormlyConfig, ConfigOption } from './services/formly.config';
