@@ -96,6 +96,8 @@ export class FormlyField implements DoCheck, OnInit, OnDestroy {
 
 			const fieldComponentRef = this.createFieldComponent();
 			if (this.field.key) {
+				this.options.components.push(fieldComponentRef.instance);
+
 				let valueChanges = fieldComponentRef.instance.formControl.valueChanges;
 				if (debounce > 0) {
 					valueChanges = debounceTime.call(valueChanges, debounce);

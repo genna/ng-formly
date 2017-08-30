@@ -40,4 +40,7 @@ export abstract class Field {
 	get formState() {
 		return this.options.formState || {};
 	}
+
+	onBeforePatchValue() {
+	}
 }

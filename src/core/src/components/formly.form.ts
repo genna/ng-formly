@@ -41,6 +41,7 @@ export class FormlyForm implements OnChanges {
 			this.form = this.form || (new FormGroup({}));
 			this.setOptions();
 			if (this.buildForm !== false) {
+				this.options.components = [];
 				this.formlyBuilder.buildForm(this.form, this.fields, this.model, this.options);
 			}
 			this.updateInitialValue();
@@ -77,6 +78,12 @@ export class FormlyForm implements OnChanges {
 	}
 
 	private resetModel(model?: any) {
+		this.options.components.forEach(component => {
+			if (component.onBeforePatchValue) {
+				component.onBeforePatchValue();
+			}
+		});
+
 		model = isNullOrUndefined(model) ? this.initialModel : model;
 		this.form.patchValue(model);
 		this.resetFormGroup(model, this.form);
