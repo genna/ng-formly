@@ -78,6 +78,8 @@ export class FormlyForm implements OnChanges {
 	}
 
 	private resetModel(model?: any) {
+		this.modelWillChange.emit();
+
 		this.options.components.forEach(component => {
 			if (component.onBeforePatchValue) {
 				component.onBeforePatchValue();
@@ -88,6 +90,8 @@ export class FormlyForm implements OnChanges {
 		this.form.patchValue(model);
 		this.resetFormGroup(model, this.form);
 		this.resetFormModel(model, this.model);
+
+		this.modelDidChange.emit();
 	}
 
 	private resetFormModel(model: any, formModel: any, path?: (string | number)[]) {
