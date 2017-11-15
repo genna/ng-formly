@@ -1,6 +1,6 @@
 {
   "name": "wfw-ngx-formly",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "Zama Khan Mohammed <mohammedzamakhan@gmail.com>",
   "contributors": [
     "Zama Khan Mohammed <mohammedzamakhan@gmail.com>",
@@ -54,13 +54,13 @@
     "tslib": "^1.7.1"
   },
   "devDependencies": {
-    "@angular/common": "4.3.1",
-    "@angular/compiler": "4.3.1",
-    "@angular/compiler-cli": "4.3.1",
-    "@angular/core": "4.3.1",
-    "@angular/forms": "4.3.1",
-    "@angular/platform-browser": "4.3.1",
-    "@angular/platform-browser-dynamic": "4.3.1",
+    "@angular/common": "5.0.1",
+    "@angular/compiler": "5.0.1",
+    "@angular/compiler-cli": "5.0.1",
+    "@angular/core": "5.0.1",
+    "@angular/forms": "5.0.1",
+    "@angular/platform-browser": "5.0.1",
+    "@angular/platform-browser-dynamic": "5.0.1",
     "@types/jasmine": "2.5.40",
     "@types/node": "^7.0.22",
     "angular2-template-loader": "^0.6.2",
